@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espace Joueurs — Club d'Échecs FIC</title>
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#17202a;--muted:#667085;--accent:#9b6b27;--line:#e4e0d8;--dark:#20262e}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--dark);color:white;padding:28px 18px;text-align:center}header h1{margin:0 0 8px;font-size:28px}header p{margin:0;color:#d8dde3}
+nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+nav button{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:9px;cursor:pointer;font-weight:700}
+nav button:hover{background:#f1eee8}
+main{max-width:1150px;margin:auto;padding:22px 14px}
+section{display:none}.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #00000008}
+.card h2,.card h3{margin-top:0}
+.big{font-size:30px;font-weight:800}.muted{color:var(--muted)}
+table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden}
+th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left}th{background:#f0ede7}
+.search{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font-size:16px;margin-bottom:14px}
+.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#eee8dc;font-size:12px;font-weight:700}
+.player{cursor:pointer}.player:hover{background:#faf7f1}
+.notice{padding:13px;border-radius:10px;background:#f8f2e5;border:1px solid #ead9b8;margin-bottom:15px}
+form{display:grid;gap:10px}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+input,select{padding:11px;border:1px solid var(--line);border-radius:9px;font-size:15px}
+.primary{background:var(--dark);color:white;border:0;padding:12px 15px;border-radius:9px;cursor:pointer;font-weight:700}
+.danger{background:#8d2c2c;color:white;border:0;padding:8px 10px;border-radius:7px;cursor:pointer}
+.profile{display:grid;grid-template-columns:180px 1fr;gap:18px}.avatar{background:var(--dark);color:white;border-radius:16px;display:grid;place-items:center;font-size:55px;min-height:180px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.stat{background:#faf9f6;border:1px solid var(--line);padding:13px;border-radius:10px}.stat strong{display:block;font-size:24px}
+@media(max-width:650px){.profile{grid-template-columns:1fr}.avatar{min-height:120px}}
+.small{font-size:13px}.success{color:#216e3a;font-weight:700}.error{color:#9b2424;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+<h1>♟️ Espace Joueurs — Club d'Échecs FIC</h1>
+<p>Suivez les classements et les statistiques de votre saison</p>
+</header>
+<nav>
+<button onclick="show('accueil')">Accueil</button>
+<button onclick="show('roi')">Groupe Roi</button>
+<button onclick="show('pion')">Groupe Pion</button>
+<button onclick="show('roidor')">Roi d'Or</button>
+<button onclick="show('joueurs')">Joueurs</button>
+<button onclick="show('admin')">🔐 Administration</button>
+</nav>
+
+<main>
+<section id="accueil" class="active">
+<div class="grid">
+<div class="card"><h2>👑 Groupe Roi</h2><p class="muted">Consultez le classement et les statistiques du championnat.</p><button class="primary" onclick="show('roi')">Voir le classement</button></div>
+<div class="card"><h2>♟️ Groupe Pion</h2><p class="muted">Consultez le classement et les statistiques du championnat.</p><button class="primary" onclick="show('pion')">Voir le classement</button></div>
+<div class="card"><h2>👑 Roi d'Or</h2><p class="muted">Suivez le classement général de la course au Roi d'Or.</p><button class="primary" onclick="show('roidor')">Voir le classement</button></div>
+<div class="card"><h2>🔎 Mon profil</h2><p class="muted">Recherchez votre nom pour consulter vos statistiques individuelles.</p><button class="primary" onclick="show('joueurs')">Rechercher un joueur</button></div>
+</div>
+</section>
+
+<section id="roi"><div class="card"><h2>👑 Championnat — Groupe Roi</h2><div id="roiTable"></div></div></section>
+<section id="pion"><div class="card"><h2>♟️ Championnat — Groupe Pion</h2><div id="pionTable"></div></div></section>
+<section id="roidor"><div class="card"><h2>🏆 Classement Roi d'Or</h2><p class="muted">Classement général des joueurs des deux championnats.</p><div id="roidorTable"></div></div></section>
+
+<section id="joueurs">
+<div class="card"><h2>🔎 Rechercher un joueur</h2>
+<input id="playerSearch" class="search" placeholder="Écrire un nom..." oninput="renderPlayers()">
+<div id="playerList"></div>
+</div>
+<div id="profileBox" style="margin-top:15px"></div>
+</section>
+
+<section id="admin">
+<div class="card">
+<h2>🔐 Administration</h2>
+<div id="loginBox">
+<div class="notice">Cette partie est réservée à l'administration du club.</div>
+<input id="adminCode" type="password" placeholder="Code d'administration">
+<button class="primary" onclick="login()">Accéder</button>
+<p id="loginMsg"></p>
+</div>
+<div id="adminPanel" style="display:none">
+<div class="notice"><strong>Mode administration actif.</strong> Les résultats enregistrés ici mettent à jour automatiquement les classements et statistiques.</div>
+<form onsubmit="addResult(event)">
+<div class="formgrid">
+<select id="champ" required><option value="Roi">Groupe Roi</option><option value="Pion">Groupe Pion</option></select>
+<select id="white" required></select>
+<select id="black" required></select>
+<select id="result" required><option value="1-0">1–0</option><option value="1/2-1/2">½–½</option><option value="0-1">0–1</option></select>
+<input id="date" type="date">
+</div>
+<button class="primary">Enregistrer le résultat</button>
+</form>
+<p id="saveMsg"></p>
+<h3>Résultats enregistrés</h3>
+<div id="adminResults"></div>
+<button class="danger" onclick="resetResults()">Réinitialiser tous les résultats</button>
+<button class="primary" onclick="logout()" style="margin-left:8px">Fermer l'administration</button>
+</div>
+</div>
+</section>
+</main>
+
+<script>
+const ADMIN_CODE="Nxgv2026";
+const roiNames=["Sylvain Bryhann","Pierre Hatley","Millery Fabrice","Nazaire Kerry Fabian","Revil Ryan","Turenne Wade","Dolne Marckley Paolo","Dume Anel","Avril Garvens","Noël Kévin Rod Andy"];
+const pionNames=["Hans Ryan Estira","Menard Rodensley","Samon Arthur","Clervil Olivier","Guirand Mike Aderson","Émile Jr Bernado","Moncy Hubert Marvin","Lenny Jean Rolf","Noël Jeune Remy Noah","Jeff","Victor Fayden","Séjour Jethro Widmysan","Sinous Gordon Himckley","Nelson Davindry","Montesuma","Dubic Jean Braudry Baudelaire","Lundy Christian","Paul Werley","Prince Coutin","Sinsmis Mc Donald","Emmanuel Carlens"];
+const allPlayers=[...roiNames.map(n=>({name:n,group:"Roi"})),...pionNames.map(n=>({name:n,group:"Pion"}))];
+let results=JSON.parse(localStorage.getItem("ficPlayerResults2026_2027")||"[]");
+
+function show(id){document.querySelectorAll("main section").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");if(id==="roi")renderTable("Roi");if(id==="pion")renderTable("Pion");if(id==="roidor")renderRoiDor();if(id==="joueurs")renderPlayers();if(id==="admin"&&document.getElementById("adminPanel").style.display==="block")renderAdmin()}
+function stats(name,group){
+ let a={played:0,wins:0,draws:0,losses:0,points:0,white:0,black:0};
+ results.forEach(r=>{if(r.white!==name&&r.black!==name)return;a.played++;let isW=r.white===name;let res=r.result;
+ if(res==="1-0"){if(isW){a.wins++;a.points+=3}else a.losses++}else if(res==="0-1"){if(!isW){a.wins++;a.points+=3}else a.losses++}else{a.draws++;a.points++}
+ if(isW)a.white++;else a.black++;
+ }); return a;
+}
+function standings(group){return allPlayers.filter(p=>p.group===group).map(p=>({...p,...stats(p.name,group)})).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name))}
+function renderTable(group){
+ const data=standings(group);let html="<table><thead><tr><th>#</th><th>Joueur</th><th>J</th><th>V</th><th>N</th><th>D</th><th>Pts</th></tr></thead><tbody>";
+ data.forEach((p,i)=>html+=`<tr class="player" onclick="openProfile('${esc(p.name)}')"><td>${i+1}</td><td><strong>${esc(p.name)}</strong></td><td>${p.played}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td><strong>${p.points}</strong></td></tr>`);
+ html+="</tbody></table>";document.getElementById(group==="Roi"?"roiTable":"pionTable").innerHTML=html;
+}
+function roiScore(p){
+ const s=stats(p.name,p.group);
+ return s.points + s.wins*0.5;
+}
+function renderRoiDor(){
+ const data=allPlayers.map(p=>({...p,...stats(p.name,p.group),roiScore:roiScore(p)})).sort((a,b)=>b.roiScore-a.roiScore||b.points-a.points);
+ let html="<table><thead><tr><th>#</th><th>Joueur</th><th>Groupe</th><th>Pts championnat</th><th>V</th><th>N</th><th>D</th><th>Score Roi d'Or*</th></tr></thead><tbody>";
+ data.forEach((p,i)=>html+=`<tr class="player" onclick="openProfile('${esc(p.name)}')"><td>${i+1}</td><td>${esc(p.name)}</td><td><span class="badge">${p.group}</span></td><td>${p.points}</td><td>${p.wins}</td><td>${p.draws}</td><td>${p.losses}</td><td><strong>${p.roiScore.toFixed(1)}</strong></td></tr>`);
+ html+="</tbody></table><p class='small muted'>* Score technique provisoire basé sur les résultats enregistrés. Les critères officiels du Roi d'Or peuvent être ajustés par le club.</p>";
+ document.getElementById("roidorTable").innerHTML=html;
+}
+function renderPlayers(){
+ const q=(document.getElementById("playerSearch")?.value||"").toLowerCase();
+ const list=allPlayers.filter(p=>p.name.toLowerCase().includes(q));
+ document.getElementById("playerList").innerHTML=list.map(p=>`<div class="card player" style="margin-bottom:8px" onclick="openProfile('${esc(p.name)}')"><strong>${esc(p.name)}</strong> <span class="badge">${p.group}</span></div>`).join("")||"<p class='muted'>Aucun joueur trouvé.</p>";
+}
+function openProfile(name){
+ const p=allPlayers.find(x=>x.name===name);if(!p)return;const s=stats(name,p.group);
+ const games=results.filter(r=>r.white===name||r.black===name);
+ let rows=games.map(r=>{let opp=r.white===name?r.black:r.white;return `<tr><td>${r.date||"—"}</td><td>${esc(opp)}</td><td>${r.white===name?"⚪ Blancs":"⚫ Noirs"}</td><td><strong>${esc(r.result)}</strong></td></tr>`}).join("");
+ document.getElementById("profileBox").innerHTML=`<div class="card"><div class="profile"><div class="avatar">♟</div><div><h2>${esc(p.name)}</h2><span class="badge">Groupe ${p.group}</span><div class="statgrid" style="margin-top:14px">
+ <div class="stat">Parties<strong>${s.played}</strong></div><div class="stat">Victoires<strong>${s.wins}</strong></div><div class="stat">Nulles<strong>${s.draws}</strong></div><div class="stat">Défaites<strong>${s.losses}</strong></div><div class="stat">Points<strong>${s.points}</strong></div><div class="stat">Taux de victoire<strong>${s.played?Math.round(s.wins/s.played*100):0}%</strong></div></div></div></div>
+ <h3 style="margin-top:20px">Historique des rencontres</h3>${games.length?`<table><thead><tr><th>Date</th><th>Adversaire</th><th>Couleur</th><th>Résultat</th></tr></thead><tbody>${rows}</tbody></table>`:"<p class='muted'>Aucune rencontre enregistrée.</p>"}</div>`;
+ document.getElementById("profileBox").scrollIntoView({behavior:"smooth"});
+}
+function fillAdminPlayers(){let a=document.getElementById("white"),b=document.getElementById("black");a.innerHTML="";b.innerHTML="";allPlayers.forEach(p=>{a.innerHTML+=`<option>${esc(p.name)}</option>`;b.innerHTML+=`<option>${esc(p.name)}</option>`})}
+function login(){if(document.getElementById("adminCode").value===ADMIN_CODE){document.getElementById("loginBox").style.display="none";document.getElementById("adminPanel").style.display="block";renderAdmin()}else{document.getElementById("loginMsg").innerHTML="<span class='error'>❌ Code incorrect.</span>"}}
+function logout(){document.getElementById("adminPanel").style.display="none";document.getElementById("loginBox").style.display="block";document.getElementById("adminCode").value=""}
+function addResult(e){e.preventDefault();let w=document.getElementById("white").value,b=document.getElementById("black").value;if(w===b){document.getElementById("saveMsg").innerHTML="<span class='error'>Choisissez deux joueurs différents.</span>";return}
+let group=document.getElementById("champ").value;let wp=allPlayers.find(p=>p.name===w),bp=allPlayers.find(p=>p.name===b);if(wp.group!==group||bp.group!==group){document.getElementById("saveMsg").innerHTML="<span class='error'>Les deux joueurs doivent appartenir au championnat sélectionné.</span>";return}
+results.push({champ:group,white:w,black:b,result:document.getElementById("result").value,date:document.getElementById("date").value});save();document.getElementById("saveMsg").innerHTML="<span class='success'>✅ Résultat enregistré.</span>";renderAdmin();renderTable("Roi");renderTable("Pion");renderRoiDor()}
+function renderAdmin(){let box=document.getElementById("adminResults");box.innerHTML=results.length?`<table><thead><tr><th>Championnat</th><th>Blancs</th><th>Noirs</th><th>Résultat</th><th></th></tr></thead><tbody>${results.map((r,i)=>`<tr><td>${r.champ}</td><td>${esc(r.white)}</td><td>${esc(r.black)}</td><td>${esc(r.result)}</td><td><button class="danger" onclick="deleteResult(${i})">Supprimer</button></td></tr>`).join("")}</tbody></table>`:"<p class='muted'>Aucun résultat enregistré.</p>"}
+function deleteResult(i){results.splice(i,1);save();renderAdmin();renderTable("Roi");renderTable("Pion");renderRoiDor()}
+function resetResults(){if(confirm("Réinitialiser tous les résultats ?")){results=[];save();renderAdmin();renderTable("Roi");renderTable("Pion");renderRoiDor()}}
+function save(){localStorage.setItem("ficPlayerResults2026_2027",JSON.stringify(results))}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+fillAdminPlayers();renderTable("Roi");renderTable("Pion");renderRoiDor();renderPlayers();
+</script>
+</body>
+</html>
