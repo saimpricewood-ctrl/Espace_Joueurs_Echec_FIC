@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -46,7 +47,6 @@ input,select{padding:11px;border:1px solid var(--line);border-radius:9px;font-si
 <button onclick="show('joueurs')">Joueurs</button>
 <button onclick="show('admin')">🔐 Administration</button>
 </nav>
-
 <main>
 <section id="accueil" class="active">
 <div class="grid">
@@ -56,11 +56,9 @@ input,select{padding:11px;border:1px solid var(--line);border-radius:9px;font-si
 <div class="card"><h2>🔎 Mon profil</h2><p class="muted">Recherchez votre nom pour consulter vos statistiques individuelles.</p><button class="primary" onclick="show('joueurs')">Rechercher un joueur</button></div>
 </div>
 </section>
-
 <section id="roi"><div class="card"><h2>👑 Championnat — Groupe Roi</h2><div id="roiTable"></div></div></section>
 <section id="pion"><div class="card"><h2>♟️ Championnat — Groupe Pion</h2><div id="pionTable"></div></div></section>
 <section id="roidor"><div class="card"><h2>🏆 Classement Roi d'Or</h2><p class="muted">Classement général des joueurs des deux championnats.</p><div id="roidorTable"></div></div></section>
-
 <section id="joueurs">
 <div class="card"><h2>🔎 Rechercher un joueur</h2>
 <input id="playerSearch" class="search" placeholder="Écrire un nom..." oninput="renderPlayers()">
@@ -68,7 +66,6 @@ input,select{padding:11px;border:1px solid var(--line);border-radius:9px;font-si
 </div>
 <div id="profileBox" style="margin-top:15px"></div>
 </section>
-
 <section id="admin">
 <div class="card">
 <h2>🔐 Administration</h2>
@@ -99,11 +96,10 @@ input,select{padding:11px;border:1px solid var(--line);border-radius:9px;font-si
 </div>
 </section>
 </main>
-
 <script>
 const ADMIN_CODE="Nxgv2026";
 const roiNames=["Sylvain Bryhann","Pierre Hatley","Millery Fabrice","Nazaire Kerry Fabian","Revil Ryan","Turenne Wade","Dolne Marckley Paolo","Dume Anel","Avril Garvens","Noël Kévin Rod Andy"];
-const pionNames=["Hans Ryan Estira","Menard Rodensley","Samon Arthur","Clervil Olivier","Guirand Mike Aderson","Émile Jr Bernado","Moncy Hubert Marvin","Lenny Jean Rolf","Noël Jeune Remy Noah","Jeff","Victor Fayden","Séjour Jethro Widmysan","Sinous Gordon Himckley","Nelson Davindry","Montesuma","Dubic Jean Braudry Baudelaire","Lundy Christian","Paul Werley","Prince Coutin","Sinsmis Mc Donald","Emmanuel Carlens"];
+const pionNames=["Hans Ryan Estira","Menard Rodensley","Samon Arthur","Clervil Olivier","Guirand Mike Anderson","Émile Jr Bernado","Moncy Hubert Marvin","Lenny Jean Rolf","Noël Jeune Remy Noah","Jeff","Victor Fayden","Séjour Jethro Widmysan","Sinous Gordon Himckley","Nelson Davindry","Montesuma","Dubic Jean Braudry Baudelaire","Lundy Christian","Paul Werley","Prince Coutin","Sinsmis Mc Donald","Benêche Martial Junior","Charles Steph","Sterlin Cedric Killian","Pierre Bradley Ivanou"];
 const allPlayers=[...roiNames.map(n=>({name:n,group:"Roi"})),...pionNames.map(n=>({name:n,group:"Pion"}))];
 let results=JSON.parse(localStorage.getItem("ficPlayerResults2026_2027")||"[]");
 
@@ -146,7 +142,15 @@ function openProfile(name){
  <h3 style="margin-top:20px">Historique des rencontres</h3>${games.length?`<table><thead><tr><th>Date</th><th>Adversaire</th><th>Couleur</th><th>Résultat</th></tr></thead><tbody>${rows}</tbody></table>`:"<p class='muted'>Aucune rencontre enregistrée.</p>"}</div>`;
  document.getElementById("profileBox").scrollIntoView({behavior:"smooth"});
 }
-function fillAdminPlayers(){let a=document.getElementById("white"),b=document.getElementById("black");a.innerHTML="";b.innerHTML="";allPlayers.forEach(p=>{a.innerHTML+=`<option>${esc(p.name)}</option>`;b.innerHTML+=`<option>${esc(p.name)}</option>`})}
+function fillAdminPlayers(){
+ let a=document.getElementById("white"),b=document.getElementById("black");
+ a.innerHTML="";b.innerHTML="";
+ const sortedPlayers=[...allPlayers].sort((x,y)=>x.name.localeCompare(y.name,"fr",{sensitivity:"base"}));
+ sortedPlayers.forEach(p=>{
+ a.innerHTML+=`<option value="${esc(p.name)}">${esc(p.name)}</option>`;
+ b.innerHTML+=`<option value="${esc(p.name)}">${esc(p.name)}</option>`;
+ });
+}
 function login(){if(document.getElementById("adminCode").value===ADMIN_CODE){document.getElementById("loginBox").style.display="none";document.getElementById("adminPanel").style.display="block";renderAdmin()}else{document.getElementById("loginMsg").innerHTML="<span class='error'>❌ Code incorrect.</span>"}}
 function logout(){document.getElementById("adminPanel").style.display="none";document.getElementById("loginBox").style.display="block";document.getElementById("adminCode").value=""}
 function addResult(e){e.preventDefault();let w=document.getElementById("white").value,b=document.getElementById("black").value;if(w===b){document.getElementById("saveMsg").innerHTML="<span class='error'>Choisissez deux joueurs différents.</span>";return}
